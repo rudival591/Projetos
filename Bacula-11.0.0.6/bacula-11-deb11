@@ -1,0 +1,316 @@
+#################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+# Passos para Instalação do Bacula via Compilação no Debian 11 () #
+# MySQL / MariaDB e PostgreSQL e mysql 5.7 #
+# Autor: Rudival Junior #
+# E-mail: rudival591@gmail.com #
+# Data de atualização: 30/01/2023 #
+#################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+* Leia todos os itens de pesquisa a partir de uma instalação. 
+
+* Este tutorial foi testado no Debian 10 (buster) e Debian 11 30/01/2023
+
+===================================================== ===================================================================
+ >>> Atualizar a lista dos pacotes <<<
+===================================================== ===================================================================
+apt-get update -y
+
+
+===================================================== ===================================================================
+ >>> Pacotes necessários para compilação padrão <<<        DEBIAN 10 (buster)
+===================================================== ===================================================================
+apt-get install vim make gcc build-essential perl unp mc mtx libreadline7* \
+libreadline5-dbg libreadline-gplv2-dev zlib1g-dev lzop liblzo2-dev python-lzo sudo \
+gawk gdb libacl1 libacl1-dev libssl-dev lsscsi apt-transport-https 
+
+
+===================================================== ===================================================================
+ >>> Pacotes necessários para compilação padrão <<<        DEBIAN 11 ()
+===================================================== ===================================================================
+apt-get install vim make gcc build-essential perl unp mc mtx libreadline8 libreadline-dev zlib1g-dev lzop liblzo2-dev python3-lzo sudo gawk gdb libacl1 libacl1-dev libssl-dev lsscsi apt-transport-https -y
+
+
+===================================================== ===================================================================
+ >>> Pacotes necessários para compilação dos drivers cloud S3 <<<
+===================================================== ===================================================================
+apt-get install libxml2-dev libcurl4-openssl-dev -y
+
+
+===================================================== ===================================================================
+ >>> Pacotes necessários para utilizar o banco de dados MySQL 5.7 <<<
+===================================================== ===================================================================
+             
+    wget https://dev.mysql.com/get/mysql-apt-config_0.8.18-1_all.deb
+    
+    sudo dpkg -i mysql-apt-config_0.8.18-1_all.deb
+    
+    
+Selecionar (debian buster)
+
+Selecionar (MySQL Server & Cluster (Currently selected: mysql-8.0))
+
+Selecionar mysql-5.7
+
+Selecionar ok
+
+    apt update
+    
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 467B942D3A79BD29    
+
+    apt update     
+
+    apt-get install mysql-community-server libmysqlclient-dev
+    
+    (Setar uma senha, para nao usar senha deixe em branco)
+
+    sudo systemctl restart mysql
+    
+    sudo systemctl enable mysql
+    
+    mysql
+
+    quit
+
+
+===================================================== ===================================================================
+ >>> Pacotes necessários para utilizar o banco de dados MySQL-MariaDB <<<
+===================================================== ===================================================================
+* Adicionar a chave pública como confiável :
+wget -O /tmp/RPM-GPG-KEY-mysql https://repo.mysql.com/RPM-GPG-KEY-mysql --no-check-certificate
+apt-key add /tmp/RPM-GPG-KEY-mysql
+
+===================================================== =====================================
+ >>> Pacotes necessários para utilizar o banco de dados MariaDB <<<
+===================================================== =====================================
+* Cuidado com senhas com caractes especiais, pois pode apresentar problemas na 
+criação dos scripts. Se for uma instalação fresca, prefira deixar a senha em branco.
+
+* Lembrando que MariaDB não é homologado pelo Bacula, porém funciona.
+apt-get install mariadb-server libmariadbd-dev libmariadbclient-dev \
+libmariadbclient-dev-compat -y
+
+
+===================================================== ==================================
+ >>> Pacotes para utilizar o banco de dados PostgreSQL <<<
+===================================================== ==================================
+apt-get install postgresql-11 postgresql-contrib-11 postgresql-client-11 \
+postgresql-server-dev-11
+
+
+===================================================== ==================================
+ >>> Baixando e Compilando o Fonte para usar os drivers Cloud S3 <<<
+=====================================================================================
+cd /usr/src
+wget -c https://www.bacula.org/downloads/libs3-20200523.tar.gz
+tar xvzf libs3-20200523.tar.gz
+cd /usr/src/libs3-20200523
+DESTDIR=/usr/local make clean
+DESTDIR=/usr/local make
+DESTDIR=/usr/local make install
+
+# Refazer os caches das libraries
+rm /etc/ld.so.cache
+sudo ldconfig
+
+Se tudo ocorrer bem o comando "s3" vai funcionar no terminal
+s3
+
+=====================================================================================
+ >>> Baixando e Compilando o Fonte <<<
+=====================================================================================
+cd /usr/src
+*Utilizando wget 
+wget --no-check-certificate https://sourceforge.net/projects/bacula/files/bacula/11.0.6/bacula-11.0.6.tar.gz
+tar xvzf bacula-11.0.6.tar.gz
+cd bacula-11.0.6
+
+*Utilizando git (sempre busca a versão mais recente, porém as vezes pode conter alguns bugs)
+apt-get install git
+git clone -b Branch-11.0 http://git.bacula.org/bacula.git bacula
+cd /usr/src/bacula/bacula
+
+########################################################################################################
+#                                                                                                      #
+# Nessa parte abaixo é preciso definir o banco de dados que será utilizado MySQL/MariaDB ou PostgreSQL #
+# Utilize os comandos de acordo com o banco escolhido.                                                 #
+# 
+#                                                                                    #
+#                                                                                                      #
+########################################################################################################
+
+* Comando de pré-compilação para MySQL/MariaDB
+./configure \
+ --enable-smartalloc \
+ --with-mysql \
+ --with-db-user=bacula \
+ --with-db-password=bacula \
+ --with-db-port=3306 \
+ --with-openssl \
+ --with-readline=/usr/include/readline \
+ --sysconfdir=/etc/bacula \
+ --bindir=/usr/bin \
+ --sbindir=/usr/sbin \
+ --with-scriptdir=/etc/bacula/scripts \
+ --with-plugindir=/etc/bacula/plugins \
+ --with-pid-dir=/var/run \
+ --with-subsys-dir=/etc/bacula/working \
+ --with-working-dir=/etc/bacula/working \
+ --with-bsrdir=/etc/bacula/bootstrap \
+ --with-s3=/usr/local \
+ --with-basename=bacula \
+ --with-hostname=XXX_IP_SERVIDOR_BACULA_XXX \ 
+ --with-systemd \
+ --disable-conio \
+ --disable-nls \
+ --with-logdir=/var/log/bacula \
+ --with-dump-email=email@dominio.com.br \
+ --with-job-email=email@dominio.com.br
+
+
+* Comando de pré-compilação para PostgreSQL
+./configure \
+ --enable-smartalloc \
+ --with-postgresql \
+ --with-db-user=bacula \
+ --with-db-password=bacula \
+ --with-db-port=5432 \
+ --with-openssl \
+ --with-readline=/usr/include/readline \
+ --sysconfdir=/etc/bacula \
+ --bindir=/usr/bin \
+ --sbindir=/usr/sbin \
+ --with-scriptdir=/etc/bacula/scripts \
+ --with-plugindir=/etc/bacula/plugins \
+ --with-pid-dir=/var/run \
+ --with-subsys-dir=/etc/bacula/working \
+ --with-working-dir=/etc/bacula/working \
+ --with-bsrdir=/etc/bacula/bootstrap \
+ --with-s3=/usr/local \
+ --with-basename=bacula \
+ --with-hostname=XXX_IP_SERVIDOR_BACULA_XXX \
+ --with-systemd \
+ --disable-conio \
+ --disable-nls \
+ --with-logdir=/var/log/bacula \
+ --with-dump-email=email@dominio.com.br \
+ --with-job-email=email@dominio.com.br
+
+*Comando para efetuar a compilação e instalação
+make -j 8
+make install
+make install-autostart
+
+
+########################################################################################################
+#                                                                                                      #
+# Passos para criação do banco de dados, usuários e  permisssões MySQL/MariaDB                         #
+#                                                                                                      #
+########################################################################################################
+
+=====================================================================================
+ >>> Configurar os usuários no MySQL/MariaDB <<<
+=====================================================================================
+*Caso você não tenha definido uma senha:
+mysql -u root
+
+*Caso tenha definido uma senha
+mysql -u root -p
+
+GRANT ALL ON *.* TO 'root'@'localhost';
+
+CREATE USER bacula;
+
+GRANT ALL ON *.* TO 'bacula'@'localhost' IDENTIFIED BY 'bacula' WITH GRANT OPTION;
+
+GRANT SELECT ON mysql.proc TO 'bacula';
+
+FLUSH PRIVILEGES;
+
+QUIT
+
+systemctl restart mysql
+
+
+=====================================================================================
+ >>> Criar as tabelas do bacula no MySQL/MariaDB <<<
+=====================================================================================
+chmod 775 /etc/bacula
+cd /etc/bacula/scripts
+* Caso não tenha definido uma senha
+/etc/bacula/scripts/create_mysql_database
+/etc/bacula/scripts/make_mysql_tables
+/etc/bacula/scripts/grant_mysql_privileges
+
+* Caso tenha definido uma senha
+/etc/bacula/scripts/create_mysql_database -u root -p
+/etc/bacula/scripts/make_mysql_tables -u root -p
+/etc/bacula/scripts/grant_mysql_privileges -u root -p
+
+
+########################################################################################################
+#                                                                                                      #
+# Passos para criação do banco de dados, usuários e  permisssões PostgreSQL                            #
+#                                                                                                      #
+########################################################################################################
+
+
+=====================================================================================
+ >>> Criar as tabelas do bacula no PostgreSQL <<<
+=====================================================================================
+chmod 775 /etc/bacula
+cd /etc/bacula/scripts
+chown postgres create_postgresql_database && chown postgres make_postgresql_tables && \
+chown postgres grant_postgresql_privileges && chown postgres drop_postgresql_database && \
+chown postgres update_postgresql_tables
+su postgres
+/etc/bacula/scripts/create_postgresql_database
+/etc/bacula/scripts/make_postgresql_tables
+/etc/bacula/scripts/grant_postgresql_privileges
+exit
+
+
+=====================================================================================
+ >>> Definindo a senha do usuário bacula no PostgreSQL <<<
+=====================================================================================
+su postgres
+psql
+alter user bacula with password 'bacula';
+\q
+exit
+
+
+=====================================================================================
+ >>> Configurar o acesso ao PostgreSQL pelo bacula <<<
+=====================================================================================
+Backup dos arquivos de configuração:
+\cp /etc/postgresql/11/main/postgresql.conf   /etc/postgresql/11/main/postgresql.conf.default
+\cp /etc/postgresql/11/main/pg_hba.conf       /etc/postgresql/11/main/pg_hba.conf.default
+
+Editar o arquivo /etc/postgresql/11/main/postgresql.conf e alterar a linha abaixo:
+de:    # listen_addresses = 'localhost'
+para:  listen_addresses = '*'
+
+Editar o arquivo /etc/postgresql/11/main/pg_hba.conf e alterar a seguinte linha:
+de:   local   all             all                                     peer
+para: local   all             all                                     md5
+
+*Reiniciar o PostgreSQL
+systemctl restart postgresql
+
+
+=====================================================================================
+ >>> Iniciar o bacula <<<
+=====================================================================================
+sudo bacula start
+
+Se tudo ocorrer bem, o bacula iniciará sem problemas e você pode acessar com o bconsole,
+e verá uma tela conforme abaixo
+
+Starting the Bacula Storage daemon
+Starting the Bacula File daemon
+Starting the Bacula Director daemon
+
+sudo bconsole
+
+Connecting to Director 192.168.1.1:9101
+1000 OK: 103 bacula-dir Version: 11.0.5 (03 June 2021)
+Enter a period to cancel a command.
