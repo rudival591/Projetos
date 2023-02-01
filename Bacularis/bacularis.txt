@@ -1,6 +1,6 @@
 Instalar pacotes	(Debian 11)
 
-php7.3-bcmath php7.3-curl php7.3-xml  php7.3-ldap php7.3-mysqlnd php7.3-pdo php7.3-pgsql php7.3-intl
+apt install -y php7.3-bcmath php7.3-curl php7.3-xml  php7.3-ldap php7.3-mysqlnd php7.3-pdo php7.3-pgsql php7.3-intl
 
 
 wget -qO- https://pkgs.bacularis.app/bacularis.pub | gpg --dearmor > /usr/share/keyrings/bacularis-archive-keyring.gpg
