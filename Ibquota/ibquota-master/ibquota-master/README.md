@@ -1,17 +1,10 @@
 # IBQUOTA 3 - CUPS BACKEND
-
- Print Accounting Software
-
-AJUDE NO DESENVOLVIMENTO: Reporte erros ou sugestões!
-
-    Versão 3.2: 20/fev/19
-    Versão 3.3: (Aguardando retorno dos usuarios) 
-
+  
 Instalação
 
 1 - Executar os processos de instalação dos pacotes.
 
-    $ sudo apt-get install apache2 build-essential cups pkpgcounter mysql-server php libdbd-mysql-perl libnet-ldap-perl php-ldap
+    $ sudo apt-get install apache2 build-essential cups pkpgcounter mysql-server php libdbd-mysql-perl libnet-ldap-perl php7.3-ldap
 
 1.1 - """(APENAS se o pacote pkpgcounter não exister em sua distribuição, ex CentOS)""" Instalação manual do contador de páginas pkpgcounter:
 
@@ -152,9 +145,14 @@ Em "Administration", clique em "Add Printer" Faça a instalação da impressora 
     Base de Dados: LOCAL SQL [OK]
     ...
 
-Obrigado pelo interesse no IBQUOTA!
-
 Configuração LDAP
 
 ![195695416-2d6f1d11-9f9a-48fd-9fa3-023fb4790f8d](https://user-images.githubusercontent.com/37409284/215944023-053d7ac4-3893-41b4-be76-966ce32b5043.png)
+utilizei esse filtro para realizar a conexão ldap deu certo, porém não reconhecia dava o erro, não sei se esse filtro e padrão, porém eu usei o mesmo filtro lá no backend
+
+nano /usr/lib/cups/ibquota3
+![195696162-794bbcf9-5501-4b75-9f87-d06b525cfd20](https://user-images.githubusercontent.com/37409284/215944292-6e2a15a7-d98c-44c5-9410-350c5d8f7299.png)
+
+
+
 
