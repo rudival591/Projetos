@@ -154,3 +154,7 @@ Em "Administration", clique em "Add Printer" Faça a instalação da impressora 
 
 Obrigado pelo interesse no IBQUOTA!
 
+Configuração LDAP
+
+![195695416-2d6f1d11-9f9a-48fd-9fa3-023fb4790f8d](https://user-images.githubusercontent.com/37409284/215944023-053d7ac4-3893-41b4-be76-966ce32b5043.png)
+
